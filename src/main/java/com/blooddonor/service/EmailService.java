@@ -29,7 +29,6 @@ public class EmailService {
     }
 
     public void sendOtpEmail(String toEmail, String otp, String purpose) {
-        log.info("Sending OTP email to: {} for purpose: {}", toEmail, purpose);
         try {
             String emailBody = buildEmailBody(otp, purpose);
             
@@ -49,12 +48,12 @@ public class EmailService {
             ResponseEntity<Map> response = restTemplate.postForEntity(RESEND_API_URL, request, Map.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("OTP email sent successfully to: {} with ID: {}", toEmail, response.getBody().get("id"));
+                log.info("OTP email sent successfully to: {}", toEmail);
             } else {
                 throw new RuntimeException("Failed to send email: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            log.error("Error sending OTP email to: {}. Logging OTP for testing: {}", toEmail, otp, e);
+            log.error("Error sending OTP email to: {}. Logging OTP for testing: {}", toEmail, otp);
             // For testing purposes, log the OTP instead of failing
             log.warn("=== OTP FOR TESTING ===");
             log.warn("Email: {}", toEmail);
@@ -67,7 +66,6 @@ public class EmailService {
     }
 
     public void sendReportNotification(String toEmail, String donorName, String reporterName, String reason) {
-        log.info("Sending report notification email to: {} for donor: {}", toEmail, donorName);
         try {
             String emailBody = buildReportEmailBody(donorName, reporterName, reason);
             
@@ -87,7 +85,7 @@ public class EmailService {
             ResponseEntity<Map> response = restTemplate.postForEntity(RESEND_API_URL, request, Map.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Report notification email sent successfully to: {} with ID: {}", toEmail, response.getBody().get("id"));
+                log.info("Report notification email sent successfully to: {}", toEmail);
             } else {
                 throw new RuntimeException("Failed to send email: " + response.getStatusCode());
             }

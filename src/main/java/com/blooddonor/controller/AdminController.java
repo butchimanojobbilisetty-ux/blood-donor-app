@@ -35,18 +35,12 @@ public class AdminController {
     public AdminController(DonorService donorService, JwtService jwtService) {
         this.donorService = donorService;
         this.jwtService = jwtService;
-        log.info("AdminController initialized with username: '{}' and password: '{}'", adminUsername, adminPassword);
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> loginAdmin(
             @Valid @RequestBody AdminLoginRequest loginRequest) {
         log.info("Admin login attempt for username: {}", loginRequest.getUsername());
-        log.debug("Comparing credentials - Input username: '{}', Configured username: '{}'", 
-            loginRequest.getUsername(), adminUsername);
-        log.debug("Comparing credentials - Input password: '{}', Configured password: '{}'", 
-            loginRequest.getPassword(), adminPassword);
-        
         try {
             // Use environment variables for admin credentials
             if (adminUsername.equals(loginRequest.getUsername()) && adminPassword.equals(loginRequest.getPassword())) {
@@ -58,9 +52,6 @@ public class AdminController {
                 );
             } else {
                 log.warn("Admin login failed for username: {}", loginRequest.getUsername());
-                log.warn("Username match: {}, Password match: {}", 
-                    adminUsername.equals(loginRequest.getUsername()), 
-                    adminPassword.equals(loginRequest.getPassword()));
                 throw new RuntimeException("Invalid admin credentials");
             }
         } catch (Exception e) {
