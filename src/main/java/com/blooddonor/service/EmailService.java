@@ -16,7 +16,7 @@ public class EmailService {
     
     private static final String RESEND_API_URL = "https://api.resend.com/emails";
 
-    @Value("${resend.api.key:re_eaY3jL5A_FcjVqJTw5YR5xWSH1GJpYgti}")
+    @Value("${resend.api.key:re_bPoWk2LS_38aeeqd9sfyu6SD3sevAWwMB}")
     private String resendApiKey;
 
     @Value("${resend.from.email:butchimanojobbilisetty@gmail.com}")
