@@ -19,7 +19,7 @@ public class EmailService {
     @Value("${resend.api.key:re_eaY3jL5A_FcjVqJTw5YR5xWSH1GJpYgti}")
     private String resendApiKey;
 
-    @Value("${resend.from.email:onboarding@resend.dev}")
+    @Value("${resend.from.email:butchimanojobbilisetty@gmail.com}")
     private String fromEmail;
 
     private final RestTemplate restTemplate;
@@ -45,15 +45,17 @@ public class EmailService {
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             
+            log.info("Sending email via Resend API to: {} from: {}", toEmail, fromEmail);
             ResponseEntity<Map> response = restTemplate.postForEntity(RESEND_API_URL, request, Map.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.info("OTP email sent successfully to: {}", toEmail);
             } else {
+                log.error("Failed to send email. Status: {}, Body: {}", response.getStatusCode(), response.getBody());
                 throw new RuntimeException("Failed to send email: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            log.error("Error sending OTP email to: {}. Logging OTP for testing: {}", toEmail, otp);
+            log.error("Error sending OTP email to: {}. Logging OTP for testing: {}", toEmail, otp, e);
             // For testing purposes, log the OTP instead of failing
             log.warn("=== OTP FOR TESTING ===");
             log.warn("Email: {}", toEmail);
