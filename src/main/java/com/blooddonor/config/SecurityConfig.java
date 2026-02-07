@@ -32,12 +32,12 @@ public class SecurityConfig {
             .and()
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
-                .requestMatchers("/api/donors/register/**", "/api/donors/login", "/api/admin/login").permitAll()
+                .requestMatchers("/api/donors/register/**", "/api/donors/login", "/api/donors/login-otp", "/api/admin/login").permitAll()
                 .requestMatchers("/api/donors/search").permitAll()
                 .requestMatchers("/api/donors/{id}").permitAll()
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                // Donor endpoints
+                // Donor endpoints (excluding public ones above)
                 .requestMatchers("/api/donors/**").hasRole("DONOR")
                 .anyRequest().authenticated()
             )

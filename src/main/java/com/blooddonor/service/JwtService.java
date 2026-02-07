@@ -2,7 +2,6 @@ package com.blooddonor.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +94,7 @@ public class JwtService {
                     .setSubject(subject)
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
-                    .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                    .signWith(getSigningKey())
                     .compact();
         } catch (Exception e) {
             log.error("Failed to create JWT token: {}", e.getMessage());
