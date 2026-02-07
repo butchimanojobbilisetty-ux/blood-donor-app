@@ -31,9 +31,7 @@ public class Donor {
     @Column(nullable = false, length = 50)
     private String city;
 
-    @Column(nullable = false, length = 255)
-    private String password;
-
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "availability_status")
     private AvailabilityStatus availabilityStatus = AvailabilityStatus.AVAILABLE;
@@ -118,14 +116,7 @@ public class Donor {
         this.city = city;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
+    
     public AvailabilityStatus getAvailabilityStatus() {
         return availabilityStatus;
     }

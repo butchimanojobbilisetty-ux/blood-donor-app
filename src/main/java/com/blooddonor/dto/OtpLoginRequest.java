@@ -3,14 +3,14 @@ package com.blooddonor.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public class DonorLoginRequest {
-
+public class OtpLoginRequest {
+    
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
-
-    @NotBlank(message = "Password is required")
-    private String password;
+    
+    @NotBlank(message = "OTP is required")
+    private String otp;
 
     // Getters and Setters
     public String getEmail() {
@@ -21,11 +21,11 @@ public class DonorLoginRequest {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getOtp() {
+        return otp;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 }

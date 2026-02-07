@@ -1,9 +1,9 @@
 package com.blooddonor.service;
 
-import com.blooddonor.dto.DonorLoginRequest;
 import com.blooddonor.dto.DonorRegistrationRequest;
 import com.blooddonor.dto.DonorSearchRequest;
 import com.blooddonor.dto.LoginResponse;
+import com.blooddonor.dto.OtpLoginRequest;
 import com.blooddonor.model.Donor;
 import com.blooddonor.model.OtpVerification;
 import com.blooddonor.repository.DonorRepository;
@@ -22,14 +22,11 @@ public class DonorService {
 
     private final DonorRepository donorRepository;
     private final OtpService otpService;
-    private final PasswordService passwordService;
     private final JwtService jwtService;
 
-    public DonorService(DonorRepository donorRepository, OtpService otpService, 
-                       PasswordService passwordService, JwtService jwtService) {
+    public DonorService(DonorRepository donorRepository, OtpService otpService, JwtService jwtService) {
         this.donorRepository = donorRepository;
         this.otpService = otpService;
-        this.passwordService = passwordService;
         this.jwtService = jwtService;
     }
 
@@ -44,8 +41,16 @@ public class DonorService {
 
         log.debug("Generating and sending OTP for email: {}", request.getEmail());
         // Send OTP
-        otpService.generateAndSendOtp(request.getEmail(), OtpVerification.OtpPurpose.DONOR_REGISTRATION);
-        log.info("OTP generated and sent for email: {}", request.getEmail());
+        try {
+            otpService.generateAndSendOtp(request.getEmail(), OtpVerification.OtpPurpose.DONOR_REGISTRATION);
+            log.info("OTP generated and sent for email: {}", request.getEmail());
+        } catch (RuntimeException e) {
+            log.error("Failed to send OTP for email: {} - Error: {}", request.getEmail(), e.getMessage(), e);
+            throw new RuntimeException("Failed to send OTP email. Please try again later.");
+        } catch (Exception e) {
+            log.error("Unexpected error during OTP generation for email: {} - Error: {}", request.getEmail(), e.getMessage(), e);
+            throw new RuntimeException("An unexpected error occurred during OTP generation. Please try again later.");
+        }
     }
 
     @Transactional
@@ -68,7 +73,6 @@ public class DonorService {
         donor.setBloodGroup(request.getBloodGroup());
         donor.setArea(request.getArea());
         donor.setCity(request.getCity());
-        donor.setPassword(passwordService.encodePassword(request.getPassword()));
         donor.setIsVerified(true);
         donor.setAvailabilityStatus(Donor.AvailabilityStatus.AVAILABLE);
 
@@ -168,29 +172,30 @@ public class DonorService {
         return updatedDonor;
     }
 
-    public LoginResponse authenticateDonor(DonorLoginRequest loginRequest) {
-        log.info("Authenticating donor with email: {}", loginRequest.getEmail());
+    
+    public LoginResponse authenticateDonorWithOtp(OtpLoginRequest otpLoginRequest) {
+        log.info("Authenticating donor with OTP for email: {}", otpLoginRequest.getEmail());
         
-        Donor donor = donorRepository.findByEmail(loginRequest.getEmail())
-            .orElseThrow(() -> {
-                log.warn("Authentication failed: User not found with email: {}", loginRequest.getEmail());
-                return new RuntimeException("Invalid email or password");
-            });
+        // Find donor by email
+        Donor donor = donorRepository.findByEmail(otpLoginRequest.getEmail())
+            .orElseThrow(() -> new RuntimeException("Donor not found"));
         
-        if (!passwordService.matches(loginRequest.getPassword(), donor.getPassword())) {
-            log.warn("Authentication failed: Invalid password for email: {}", loginRequest.getEmail());
-            throw new RuntimeException("Invalid email or password");
+        // Verify OTP
+        boolean isValid = otpService.verifyOtp(
+            otpLoginRequest.getEmail(), 
+            otpLoginRequest.getOtp(), 
+            OtpVerification.OtpPurpose.DONOR_REGISTRATION
+        );
+        
+        if (!isValid) {
+            log.warn("Invalid OTP for email: {}", otpLoginRequest.getEmail());
+            throw new RuntimeException("Invalid or expired OTP");
         }
         
-        if (!donor.getIsVerified()) {
-            log.warn("Authentication failed: User not verified with email: {}", loginRequest.getEmail());
-            throw new RuntimeException("Account not verified");
-        }
-        
+        // Generate JWT token
         String token = jwtService.generateToken(donor.getEmail(), "DONOR", donor.getId());
         
-        log.info("Authentication successful for donor ID: {} and email: {}", donor.getId(), donor.getEmail());
-        
+        log.info("OTP authentication successful for email: {}", otpLoginRequest.getEmail());
         return new LoginResponse(token, "Bearer", donor.getId(), donor.getEmail(), donor.getName(), "DONOR");
     }
 }

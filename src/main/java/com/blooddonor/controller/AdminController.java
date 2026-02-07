@@ -29,29 +29,38 @@ public class AdminController {
     @Value("${admin.username:admin}")
     private String adminUsername;
 
-    @Value("${admin.password:admin123}")
+    @Value("${admin.password:M@noj98491}")
     private String adminPassword;
 
     public AdminController(DonorService donorService, JwtService jwtService) {
         this.donorService = donorService;
         this.jwtService = jwtService;
+        log.info("AdminController initialized with username: '{}' and password: '{}'", adminUsername, adminPassword);
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> loginAdmin(
             @Valid @RequestBody AdminLoginRequest loginRequest) {
         log.info("Admin login attempt for username: {}", loginRequest.getUsername());
+        log.debug("Comparing credentials - Input username: '{}', Configured username: '{}'", 
+            loginRequest.getUsername(), adminUsername);
+        log.debug("Comparing credentials - Input password: '{}', Configured password: '{}'", 
+            loginRequest.getPassword(), adminPassword);
+        
         try {
             // Use environment variables for admin credentials
             if (adminUsername.equals(loginRequest.getUsername()) && adminPassword.equals(loginRequest.getPassword())) {
+                log.info("Admin login successful for username: {}", loginRequest.getUsername());
                 String token = jwtService.generateToken(loginRequest.getUsername(), "ADMIN", 0L);
                 LoginResponse loginResponse = new LoginResponse(token, "Bearer", 0L, loginRequest.getUsername(), "Administrator", "ADMIN");
-                log.info("Admin login successful for username: {}", loginRequest.getUsername());
                 return ResponseEntity.ok(
                     ApiResponse.success("Admin login successful!", loginResponse)
                 );
             } else {
                 log.warn("Admin login failed for username: {}", loginRequest.getUsername());
+                log.warn("Username match: {}, Password match: {}", 
+                    adminUsername.equals(loginRequest.getUsername()), 
+                    adminPassword.equals(loginRequest.getPassword()));
                 throw new RuntimeException("Invalid admin credentials");
             }
         } catch (Exception e) {

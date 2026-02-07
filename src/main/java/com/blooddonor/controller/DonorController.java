@@ -57,18 +57,19 @@ public class DonorController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> loginDonor(
-            @Valid @RequestBody DonorLoginRequest loginRequest) {
-        log.info("Login attempt for email: {}", loginRequest.getEmail());
+    
+    @PostMapping("/login-otp")
+    public ResponseEntity<ApiResponse<LoginResponse>> loginDonorWithOtp(
+            @Valid @RequestBody OtpLoginRequest otpLoginRequest) {
+        log.info("OTP login attempt for email: {}", otpLoginRequest.getEmail());
         try {
-            LoginResponse loginResponse = donorService.authenticateDonor(loginRequest);
-            log.info("Login successful for email: {}", loginRequest.getEmail());
+            LoginResponse loginResponse = donorService.authenticateDonorWithOtp(otpLoginRequest);
+            log.info("OTP login successful for email: {}", otpLoginRequest.getEmail());
             return ResponseEntity.ok(
                 ApiResponse.success("Login successful!", loginResponse)
             );
         } catch (Exception e) {
-            log.error("Login failed for email: {}", loginRequest.getEmail(), e);
+            log.error("OTP login failed for email: {}", otpLoginRequest.getEmail(), e);
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
